@@ -6,7 +6,7 @@ mysql_data_dir=/data/mysql
 mysql57_version=5.7.23
 Mem=`free -m | awk '/Mem:/{print $2}'`
 dbrootpwd=`head -c 500 /dev/urandom | tr -dc a-z0-9A-Z | head -c 15`
-#mysql-5.7.23-linux-glibc2.12-x86_64.tar.gz
+mysql_file="mysql-${mysql57_version}-linux-glibc2.12-x86_64.tar.gz"
 
 
 if [ -n "$(grep 'Aliyun Linux release' /etc/issue)" -o -e /etc/redhat-release ]; then
@@ -107,10 +107,17 @@ printf "
 #. ./include/download.sh
 [ -d "$mysql_install_dir/support-files" ] && { db_install_dir=$mysql_install_dir; db_data_dir=$mysql_data_dir; }
 
+download_mysql() {
+    if [ -f $mysql_file ];then
+        echo "mysql安装包已经存在.无需下载"
+    else
+	wget -c https://cdn.mysql.com//Downloads/MySQL-5.7/mysql-${mysql57_version}-linux-glibc2.12-x86_64.tar.gz
+    fi
+}
 
 Install_MySQL57() {
   #pushd ${oneinstack_dir}/src
-
+  
   id -u mysql >/dev/null 2>&1
   [ $? -ne 0 ] && useradd -M -s /sbin/nologin mysql
 
@@ -326,6 +333,7 @@ Install_Jemalloc() {
 }
 
 Install_Jemalloc
+download_mysql
 Install_MySQL57
 
 echo "mysql data dir is     :/data/mysql"
